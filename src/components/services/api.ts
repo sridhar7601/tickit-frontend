@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://34.222.114.62:8080/api',
+  baseURL: '//34.222.114.62:8080/api',
   // Remove the withCredentials option if not using cookies
   // withCredentials: true,
 });

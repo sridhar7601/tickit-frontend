@@ -57,7 +57,7 @@ const AnimatedModalDemo: React.FC<AnimatedModalDemoProps> = ({ bookingData, onCl
     try {
       // Trigger the payment API
       const paymentResponse = await fetch(
-        `http://34.222.114.62:8080/api/bookings/${bookingData.id}/pay`,
+        `//34.222.114.62:8080/api/bookings/${bookingData.id}/pay`,
         {
           method: "POST",
           headers: {
@@ -79,7 +79,7 @@ const AnimatedModalDemo: React.FC<AnimatedModalDemoProps> = ({ bookingData, onCl
 
         // Trigger the confirmation API
         const confirmResponse = await fetch(
-          `http://34.222.114.62:8080/api/bookings/${bookingData.id}/confirm`,
+          `//34.222.114.62:8080/api/bookings/${bookingData.id}/confirm`,
           {
             method: "PUT",
             headers: {

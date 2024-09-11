@@ -389,7 +389,7 @@ const Booking: React.FC = () => {
     const token = localStorage.getItem("token");
 
     if (id) {
-      fetch(`http://34.222.114.62:8080/api/shows/${id}/all-seats`, {
+      fetch(`//34.222.114.62:8080/api/shows/${id}/all-seats`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -433,7 +433,7 @@ const Booking: React.FC = () => {
     };
     const token = localStorage.getItem("token");
 
-    fetch("http://34.222.114.62:8080/api/bookings", {
+    fetch("//34.222.114.62:8080/api/bookings", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -602,7 +602,7 @@ const MyBookings: React.FC = () => {
 
       try {
         const bookingsResponse = await fetch(
-          `http://34.222.114.62:8080/api/bookings/user/${userId}`,
+          `//34.222.114.62:8080/api/bookings/user/${userId}`,
           {
             method: "GET",
             headers: {
@@ -621,7 +621,7 @@ const MyBookings: React.FC = () => {
         const ticketsWithMovieDetails = await Promise.all(
           bookingsData.map(async (ticket: Booking) => {
             const showResponse = await fetch(
-              `http://34.222.114.62:8080/api/shows/${ticket.showId}`,
+              `//34.222.114.62:8080/api/shows/${ticket.showId}`,
               {
                 method: "GET",
                 headers: {
@@ -638,7 +638,7 @@ const MyBookings: React.FC = () => {
             const showData = await showResponse.json();
 
             const movieResponse = await fetch(
-              `http://34.222.114.62:8080/api/movies/${showData.movieId}`,
+              `//34.222.114.62:8080/api/movies/${showData.movieId}`,
               {
                 method: "GET",
                 headers: {

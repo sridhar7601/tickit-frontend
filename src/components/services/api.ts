@@ -12,7 +12,10 @@ api.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
-});
+  // test
+}); 
+
+
 
 export const register = (data: { username: string; email: string; password: string; role: string; active: boolean }) => 
   api.post('/users/register', data);

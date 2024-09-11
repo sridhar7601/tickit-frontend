@@ -1,7 +1,7 @@
 "use client";
 import { cn } from "../../utils/utils"; // Assuming you have a utility function for class names
 import { AnimatePresence, motion } from "framer-motion";
-import React, {
+import {
   ReactNode,
   createContext,
   useContext,

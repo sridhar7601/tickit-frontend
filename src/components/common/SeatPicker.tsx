@@ -1,7 +1,21 @@
 import React from 'react';
 
-const SeatPicker = ({ seats, selectedSeats, handleSeatSelection }) => {
-  const groupedSeats = (type) => seats.filter((seat) => seat.type === type);
+interface Seat {
+  id: string;
+  seatNumber: string;
+  type: string;
+  price: number;
+  status: string;
+}
+
+interface SeatPickerProps {
+  seats: Seat[];
+  selectedSeats: Seat[];
+  handleSeatSelection: (seat: Seat) => void;
+}
+
+const SeatPicker: React.FC<SeatPickerProps> = ({ seats, selectedSeats, handleSeatSelection }) => {
+  const groupedSeats = (type: string) => seats.filter((seat) => seat.type === type);
 
   return (
     <div className="space-y-6 w-full lg:w-3/4">
@@ -11,14 +25,14 @@ const SeatPicker = ({ seats, selectedSeats, handleSeatSelection }) => {
         <div className="grid grid-cols-10 gap-2">
           {groupedSeats("VIP").map((seat) => (
             <button
-            key={seat.id}
-            className={`p-2 border rounded ${
-              seat.status === "BLOCKED"
-                ? "bg-gray-400 cursor-not-allowed"
-                : selectedSeats.some((s) => s.id === seat.id)
-                ? "bg-red-500"
-                : "bg-green-500"
-            }`}
+              key={seat.id}
+              className={`p-2 border rounded ${
+                seat.status === "BLOCKED"
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : selectedSeats.some((s) => s.id === seat.id)
+                  ? "bg-red-500"
+                  : "bg-green-500"
+              }`}
               onClick={() => handleSeatSelection(seat)}
             >
               {seat.seatNumber}
@@ -33,16 +47,16 @@ const SeatPicker = ({ seats, selectedSeats, handleSeatSelection }) => {
         <div className="grid grid-cols-10 gap-2">
           {groupedSeats("PREMIUM").map((seat) => (
             <button
-            key={seat.id}
-            className={`p-2 border rounded ${
-              seat.status === "BLOCKED"
-                ? "bg-gray-400 cursor-not-allowed"
-                : selectedSeats.some((s) => s.id === seat.id)
-                ? "bg-red-500"
-                : "bg-green-500"
-            }`}
-            onClick={() => handleSeatSelection(seat)}
-          >
+              key={seat.id}
+              className={`p-2 border rounded ${
+                seat.status === "BLOCKED"
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : selectedSeats.some((s) => s.id === seat.id)
+                  ? "bg-red-500"
+                  : "bg-green-500"
+              }`}
+              onClick={() => handleSeatSelection(seat)}
+            >
               {seat.seatNumber}
             </button>
           ))}
@@ -55,14 +69,14 @@ const SeatPicker = ({ seats, selectedSeats, handleSeatSelection }) => {
         <div className="grid grid-cols-10 gap-2">
           {groupedSeats("STANDARD").map((seat) => (
             <button
-            key={seat.id}
-            className={`p-2 border rounded ${
-              seat.status === "BLOCKED"
-                ? "bg-gray-400 cursor-not-allowed"
-                : selectedSeats.some((s) => s.id === seat.id)
-                ? "bg-red-500"
-                : "bg-green-500"
-            }`}
+              key={seat.id}
+              className={`p-2 border rounded ${
+                seat.status === "BLOCKED"
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : selectedSeats.some((s) => s.id === seat.id)
+                  ? "bg-red-500"
+                  : "bg-green-500"
+              }`}
               onClick={() => handleSeatSelection(seat)}
             >
               {seat.seatNumber}

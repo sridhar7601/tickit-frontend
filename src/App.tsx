@@ -1,11 +1,11 @@
-import React from 'react';
+import { ReactNode } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/pages/Login';
 import Signup from './components/pages/Signup';
 import SidebarDemo from './components/ui/sidebar-nav/sideBarComponent';
 
 // ProtectedRoute component
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const token = localStorage.getItem('token');
   
   if (!token) {

@@ -1,17 +1,56 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link, useParams } from "react-router-dom";
-import { Ticket, Calendar, MapPin, QrCode } from "lucide-react";
+import { Calendar, MapPin, QrCode } from "lucide-react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { LayoutDashboard, NotebookText, Cog, ArrowLeft } from "lucide-react";
-import { Sidebar, SidebarBody, SidebarLink } from "./sidebar"; // Assuming the second file is named sidebar.tsx
-import { cn } from "../../utils/utils"; // Assuming you have a utility function for class names
-// import Apps from '../marque/marqueeComponent'
+import { Sidebar, SidebarBody, SidebarLink } from "./sidebar";
+import { cn } from "../../utils/utils";
 import InfiniteMovingCard from "../top-cards/infinite-movingComponent";
-import { getMovies, getShowsByMovieId } from "../../services/api"; // Adjust the import path as needed
-import SeatPicker from "../../common/SeatPicker"; // Adjust the path as needed
+import { getMovies, getShowsByMovieId } from "../../services/api";
+import SeatPicker from "../../common/SeatPicker";
 import AnimatedModalDemo from "../paymentmodal/animated-modalComponent";
-import { getBookingsByUserId } from "../../services/api"; // Adjust the path
+
+// Define interfaces
+interface Movie {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+}
+
+interface Show {
+  id: string;
+  showTime: string;
+  theatre: {
+    id: string;
+    name: string;
+  };
+}
+
+interface Seat {
+  id: string;
+  seatNumber: string;
+  type: string;
+  price: number;
+  status: string;
+}
+
+interface Booking {
+  id: string;
+  userId: string;
+  showId: string;
+  seatNumbers: string[];
+  subtotal: number;
+  convenienceFee: number;
+  tax: number;
+  totalPrice: number;
+  status: string;
+  movieTitle: string;
+  imageUrl: string;
+  tickets: string[]; // Add this line
+
+}
 
 const SidebarDemo = () => {
   const [open, setOpen] = useState(false);
@@ -19,12 +58,9 @@ const SidebarDemo = () => {
 
   const handleLogout = () => {
     console.log("Logout function called");
-    // Clear the token and user details from local storage
     localStorage.removeItem("token");
     localStorage.removeItem("userDetails");
     console.log("Token and user details removed from localStorage");
-    
-    // Redirect to the login page
     navigate("/login");
     console.log("Redirecting to login page");
   };
@@ -66,19 +102,11 @@ const SidebarDemo = () => {
             {open ? <Logo /> : <LogoIcon />}
             <div className="mt-8 flex flex-col gap-2">
               {links.map((link, idx) => (
-                <SidebarLink
-                  key={idx}
-                  link={link}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigate(link.href);
-                  }}
-                />
+                <SidebarLink key={idx} link={link} />
               ))}
             </div>
           </div>
           <div>
-            {/* Logout button added here */}
             <button
               className="flex items-center gap-3 text-neutral-700 dark:text-neutral-200 p-3 hover:bg-gray-200 dark:hover:bg-neutral-700 rounded-md"
               onClick={handleLogout}
@@ -86,20 +114,6 @@ const SidebarDemo = () => {
               <ArrowLeft className="h-5 w-5 flex-shrink-0" />
               <span>Logout</span>
             </button>
-            {/* User profile link */}
-            <SidebarLink
-              link={{
-                label: "Manu Arora",
-                href: "#",
-                icon: (
-                  <img
-                    src="https://assets.aceternity.com/manu.png"
-                    className="h-7 w-7 flex-shrink-0 rounded-full"
-                    alt="Avatar"
-                  />
-                ),
-              }}
-            />
           </div>
         </SidebarBody>
       </Sidebar>
@@ -115,8 +129,6 @@ const SidebarDemo = () => {
   );
 };
 
-
-
 const Logo = () => {
   return (
     <Link
@@ -129,7 +141,7 @@ const Logo = () => {
         animate={{ opacity: 1 }}
         className="font-medium text-black dark:text-white whitespace-pre"
       >
-       Tickit
+        Tickit
       </motion.span>
     </Link>
   );
@@ -167,10 +179,13 @@ const SkeletonLoader = () => (
     </div>
   </div>
 );
-const Dashboard = () => {
+
+const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [movies, setMovies] = useState([]);
-  const [theatersByMovie, setTheatersByMovie] = useState({});
+  const [movies, setMovies] = useState<Movie[]>([]);
+  const [theatersByMovie, setTheatersByMovie] = useState<Record<string, any>>(
+    {}
+  );
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -179,24 +194,27 @@ const Dashboard = () => {
         const movieResponse = await getMovies();
         setMovies(movieResponse.data);
 
-        const theatersData = {};
+        const theatersData: Record<string, any> = {};
 
         for (const movie of movieResponse.data) {
           const showResponse = await getShowsByMovieId(movie.id);
-          const groupedShows = showResponse.reduce((acc, show) => {
-            const theatreId = show.theatre.id;
-            if (!acc[theatreId]) {
-              acc[theatreId] = {
-                theatre: show.theatre,
-                showtimes: [],
-              };
-            }
-            acc[theatreId].showtimes.push({
-              id: show.id,
-              time: show.showTime,
-            });
-            return acc;
-          }, {});
+          const groupedShows = showResponse.reduce(
+            (acc: Record<string, any>, show: Show) => {
+              const theatreId = show.theatre.id;
+              if (!acc[theatreId]) {
+                acc[theatreId] = {
+                  theatre: show.theatre,
+                  showtimes: [],
+                };
+              }
+              acc[theatreId].showtimes.push({
+                id: show.id,
+                time: show.showTime,
+              });
+              return acc;
+            },
+            {}
+          );
 
           theatersData[movie.id] = Object.values(groupedShows);
         }
@@ -211,19 +229,6 @@ const Dashboard = () => {
 
     fetchMovies();
   }, []);
-
-  const toggleText = (id) => {
-    const textContent = document.getElementById(`textContent-${id}`);
-    const toggleButton = document.getElementById(`toggleButton-${id}`);
-
-    if (textContent.classList.contains("max-h-20")) {
-      textContent.classList.remove("max-h-20", "overflow-hidden");
-      toggleButton.textContent = "Show Less";
-    } else {
-      textContent.classList.add("max-h-20", "overflow-hidden");
-      toggleButton.textContent = "Show More";
-    }
-  };
 
   return (
     <div className="flex flex-1 overflow-hidden">
@@ -258,7 +263,7 @@ const Dashboard = () => {
                 type="search"
                 id="default-search"
                 className="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                placeholder="Comming Soon..."
+                placeholder="Coming Soon..."
                 required
               />
               <button
@@ -279,7 +284,7 @@ const Dashboard = () => {
                 key={`genre-${i}`}
                 className="h-20 w-full rounded-lg bg-gray-100 dark:bg-neutral-800 animate-pulse"
               >
-                Comming Soon
+                Coming Soon
               </div>
             ))}
           </div>
@@ -316,34 +321,35 @@ const Dashboard = () => {
                       <button
                         id={`toggleButton-${movie.id}`}
                         className="mt-2 text-black-100 font-bold"
-                        onClick={() => toggleText(movie.id)}
                       >
                         Show More
                       </button>
                     </div>
                     <div className="p-6 pt-0 max-h-60 overflow-y-auto no-scrollbar">
-                      {theatersByMovie[movie.id]?.map((theatreData, index) => (
-                        <div key={index} className="mb-4">
-                          <p className="font-bold text-lg">
-                            {theatreData.theatre.name}
-                          </p>
-                          <div className="flex overflow-x-auto no-scrollbar">
-                            {theatreData.showtimes.map(
-                              (showtime, timeIndex) => (
-                                <button
-                                  key={timeIndex}
-                                  className="border border-black rounded-full text-black-100 px-4 py-1 m-1 bg-transparent whitespace-nowrap"
-                                  onClick={() =>
-                                    navigate(`/booking/${showtime.id}`)
-                                  }
-                                >
-                                  {new Date(showtime.time).toLocaleString()}
-                                </button>
-                              )
-                            )}
+                      {theatersByMovie[movie.id]?.map(
+                        (theatreData: any, index: number) => (
+                          <div key={index} className="mb-4">
+                            <p className="font-bold text-lg">
+                              {theatreData.theatre.name}
+                            </p>
+                            <div className="flex overflow-x-auto no-scrollbar">
+                              {theatreData.showtimes.map(
+                                (showtime: any, timeIndex: number) => (
+                                  <button
+                                    key={timeIndex}
+                                    className="border border-black rounded-full text-black-100 px-4 py-1 m-1 bg-transparent whitespace-nowrap"
+                                    onClick={() =>
+                                      navigate(`/booking/${showtime.id}`)
+                                    }
+                                  >
+                                    {new Date(showtime.time).toLocaleString()}
+                                  </button>
+                                )
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        )
+                      )}
                     </div>
                   </div>
                 ))}
@@ -372,67 +378,65 @@ const Settings = () => {
   );
 };
 
-
-const Booking = () => {
-  const { id } = useParams(); // Get the show ID from the URL
-  const [seats, setSeats] = useState([]);
-  const [selectedSeats, setSelectedSeats] = useState([]);
-  const [bookingData, setBookingData] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false); // State to manage modal visibility
+const Booking: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const [seats, setSeats] = useState<Seat[]>([]);
+  const [selectedSeats, setSelectedSeats] = useState<Seat[]>([]);
+  const [bookingData, setBookingData] = useState<any>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token"); // Get token from localStorage
+    const token = localStorage.getItem("token");
 
-    fetch(`http://34.222.87.166:8080/api/shows/${id}/all-seats`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`, // Add Bearer token here
-      },
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Failed to fetch seats");
-        }
-        return response.json();
+    if (id) {
+      fetch(`http://34.222.114.62:8080/api/shows/${id}/all-seats`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       })
-      .then((data) => {
-        setSeats(data); // Set seat data
-      })
-      .catch((error) => {
-        console.error("Error fetching seat data:", error); // Handle error
-      });
-  }, [id]); // Ensure the effect runs when the id changes
-
-  const handleSeatSelection = (seat) => {
-    if (seat.status === "BLOCKED") return;
-
-    const alreadySelected = selectedSeats.find((s) => s.id === seat.id);
-    if (alreadySelected) {
-      setSelectedSeats(selectedSeats.filter((s) => s.id !== seat.id));
-    } else {
-      setSelectedSeats([...selectedSeats, seat]);
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Failed to fetch seats");
+          }
+          return response.json();
+        })
+        .then((data: Seat[]) => {
+          setSeats(data);
+        })
+        .catch((error) => {
+          console.error("Error fetching seat data:", error);
+        });
     }
+  }, [id]);
+
+  const handleSeatSelection = (seat: Seat) => {
+    setSelectedSeats((prevSeats) => {
+      const alreadySelected = prevSeats.find((s) => s.id === seat.id);
+      if (alreadySelected) {
+        return prevSeats.filter((s) => s.id !== seat.id);
+      } else {
+        return [...prevSeats, seat];
+      }
+    });
   };
 
   const handleBookTicket = () => {
     const userDetails = JSON.parse(localStorage.getItem("userDetails") || "{}");
-
-    // Access the user ID
     const userId = userDetails?.id;
-    console.log("jijji");
     const seatNumbers = selectedSeats.map((seat) => seat.seatNumber);
     const requestData = {
       userId: userId,
-      showId: parseInt(id),
+      showId: id ? parseInt(id) : undefined,
       seatNumbers: seatNumbers,
     };
-    const token = localStorage.getItem("token"); // Get token from localStorage
+    const token = localStorage.getItem("token");
 
-    fetch("http://34.222.87.166:8080/api/bookings", {
+    fetch("http://34.222.114.62:8080/api/bookings", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`, // Bearer token from localStorage
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(requestData),
@@ -440,7 +444,7 @@ const Booking = () => {
       .then((response) => response.json())
       .then((data) => {
         setBookingData(data);
-        setModalOpen(true); // Open modal after booking
+        setModalOpen(true);
       })
       .catch((error) => console.error("Error booking ticket:", error));
   };
@@ -449,7 +453,6 @@ const Booking = () => {
     (total, seat) => total + seat.price,
     0
   );
-
   return (
     <div className="flex flex-1 overflow-hidden">
       <div className="flex flex-col flex-1 w-full h-full overflow-hidden">
@@ -489,8 +492,21 @@ const Booking = () => {
     </div>
   );
 };
-
-const TicketUI = ({ ticket }) => (
+interface TicketProps {
+  ticket: {
+    id: string;
+    showId: string;
+    movieTitle: string;
+    imageUrl: string;
+    tickets: string[];
+    subtotal: number;
+    convenienceFee: number;
+    tax: number;
+    totalPrice: number;
+    status: string;
+  };
+}
+const TicketUI: React.FC<TicketProps> = ({ ticket }) => (
   <div className="relative w-72 aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl">
     <div
       className="absolute inset-0 bg-cover bg-center"
@@ -540,7 +556,7 @@ const TicketUI = ({ ticket }) => (
           <span className="bg-green-400 text-white px-2 py-1 rounded-full text-xs font-semibold">
             {ticket.status}
           </span>
-        )}{" "}
+        )}
         <div className="bg-white p-1 rounded">
           <QrCode className="text-black" size={40} />
         </div>
@@ -573,22 +589,20 @@ const SkeletonLoaderbooking = () => (
   </div>
 );
 
-const MyBookings = () => {
-  const [ticketData, setTicketData] = useState([]);
+const MyBookings: React.FC = () => {
+  const [ticketData, setTicketData] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchTickets = async () => {
       const token = localStorage.getItem("token");
-      const userDetails = JSON.parse(
-        localStorage.getItem("userDetails") || "{}"
-      );
+      const userDetails = JSON.parse(localStorage.getItem("userDetails") || "{}");
       const userId = userDetails?.id;
 
       try {
         const bookingsResponse = await fetch(
-          `http://34.222.87.166:8080/api/bookings/user/${userId}`,
+          `http://34.222.114.62:8080/api/bookings/user/${userId}`,
           {
             method: "GET",
             headers: {
@@ -605,9 +619,9 @@ const MyBookings = () => {
         const bookingsData = await bookingsResponse.json();
 
         const ticketsWithMovieDetails = await Promise.all(
-          bookingsData.map(async (ticket) => {
+          bookingsData.map(async (ticket: Booking) => {
             const showResponse = await fetch(
-              `http://34.222.87.166:8080/api/shows/${ticket.showId}`,
+              `http://34.222.114.62:8080/api/shows/${ticket.showId}`,
               {
                 method: "GET",
                 headers: {
@@ -618,15 +632,13 @@ const MyBookings = () => {
             );
 
             if (!showResponse.ok) {
-              throw new Error(
-                `Failed to fetch show details for ticket ${ticket.id}`
-              );
+              throw new Error(`Failed to fetch show details for ticket ${ticket.id}`);
             }
 
             const showData = await showResponse.json();
 
             const movieResponse = await fetch(
-              `http://34.222.87.166:8080/api/movies/${showData.movieId}`,
+              `http://34.222.114.62:8080/api/movies/${showData.movieId}`,
               {
                 method: "GET",
                 headers: {
@@ -637,9 +649,7 @@ const MyBookings = () => {
             );
 
             if (!movieResponse.ok) {
-              throw new Error(
-                `Failed to fetch movie details for ticket ${ticket.id}`
-              );
+              throw new Error(`Failed to fetch movie details for ticket ${ticket.id}`);
             }
 
             const movieData = await movieResponse.json();
@@ -654,7 +664,7 @@ const MyBookings = () => {
 
         setTicketData(ticketsWithMovieDetails);
         setLoading(false);
-      } catch (err) {
+      } catch (err: any) {
         setError(err.message);
         setLoading(false);
       }
